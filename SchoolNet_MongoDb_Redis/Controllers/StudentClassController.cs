@@ -8,6 +8,7 @@ using SchoolNet_MongoDb_Redis.Entities;
 
 namespace SchoolNet_MongoDb_Redis.Controllers
 {
+    [Route("api/[controller]")]
     public class StudentClassController : Controller
     {
         private readonly SchoolNetContext _context;
