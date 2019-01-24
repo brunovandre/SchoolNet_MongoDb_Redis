@@ -27,7 +27,7 @@ namespace SchoolNet_MongoDb_Redis.Controllers
         }        
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAsync(string id)
+        public async Task<IActionResult> GetAsync(Guid id)
         {
             var studentClass = await _context.GetAsync<StudentClass>("StudentClasses", id);
             if (studentClass == null) return NotFound();
@@ -38,23 +38,29 @@ namespace SchoolNet_MongoDb_Redis.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromBody] StudentClass studentClass)
         {
+            studentClass.Uid = Guid.NewGuid();
             var response = await _context.InsertAsync(studentClass, "StudentClasses");
 
             return Created(string.Empty, response);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAsync([FromBody] StudentClass studentClass, string id)
+        public async Task<IActionResult> PutAsync([FromBody] StudentClass studentClass, Guid id)
         {
+            var entity = await _context.GetAsync<StudentClass>("StudentClasses", studentClass.Uid);
+            studentClass._id = entity._id;
+
             await _context.UpdateAsync(id, studentClass, "StudentClasses");
 
             return Ok(studentClass);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(string id)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            await _context.DeleteAsync<StudentClass>(id, "StudentClasses");
+            var result = await _context.DeleteAsync<StudentClass>(id, "StudentClasses");
+            if (result == 0)
+                return NotFound();
 
             return Ok();
         }

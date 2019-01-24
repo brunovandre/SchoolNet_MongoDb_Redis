@@ -10,7 +10,7 @@ namespace SchoolNet_MongoDb_Redis.Entities
     public class Student : IEntity
     {
         public ObjectId _id { get; set; }
-        public virtual string Id { get; set; }
+        public Guid Uid { get; set; }
 
         private string StudentId { get; set; }        
         public string FullName { get; set; }

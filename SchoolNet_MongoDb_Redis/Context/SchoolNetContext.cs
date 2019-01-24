@@ -19,9 +19,9 @@ namespace SchoolNet_MongoDb_Redis.Context
             _database = GetDatabase();
         }
 
-        public async Task<T> GetAsync<T>(string collection, string id) where T : IEntity
+        public async Task<T> GetAsync<T>(string collection, Guid uid) where T : IEntity
         {           
-            var filters = Builders<T>.Filter.Eq("Id", id);
+            var filters = Builders<T>.Filter.Eq("Uid", uid);
 
             return await _database.GetCollection<T>(collection)
                 .Find(filters).FirstOrDefaultAsync();
@@ -42,20 +42,20 @@ namespace SchoolNet_MongoDb_Redis.Context
             return entity;
         }
 
-        public async Task UpdateAsync<T>(string id, T entity, string collection) where T : IEntity
+        public async Task UpdateAsync<T>(Guid uid, T entity, string collection) where T : IEntity
         {
             var entityCollection = _database.GetCollection<T>(collection);
-            Expression<Func<T, bool>> filters = x => x.Id == id;
+            Expression<Func<T, bool>> filters = x => x.Uid == uid;
 
             await entityCollection.ReplaceOneAsync<T>(filters, entity);
         }
 
-        public async Task DeleteAsync<T>(string id, string collection) where T : IEntity
+        public async Task<long> DeleteAsync<T>(Guid id, string collection) where T : IEntity
         {
             var entityCollection = _database.GetCollection<T>(collection);
 
-            var filters = Builders<T>.Filter.Eq("Id", id);
-            await entityCollection.DeleteOneAsync(filters);
+            var filters = Builders<T>.Filter.Eq("Uid", id);
+            return (await entityCollection.DeleteOneAsync(filters)).DeletedCount;
         }
 
         private IMongoDatabase GetDatabase()

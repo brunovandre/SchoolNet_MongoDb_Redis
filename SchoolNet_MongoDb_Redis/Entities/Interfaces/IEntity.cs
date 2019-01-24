@@ -7,6 +7,6 @@ namespace SchoolNet_MongoDb_Redis.Entities.Interfaces
 {
     public interface IEntity
     {
-        string Id { get; }
+        Guid Uid { get; set; }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using MongoDB.Bson;
 using SchoolNet_MongoDb_Redis.Entities.Interfaces;
+using System;
 
 namespace SchoolNet_MongoDb_Redis.Entities
 {
     public class StudentClass : IEntity
     {
         public ObjectId _id { get; set; }
-        public virtual string Id { get; set; }
+        public Guid Uid { get; set; }
 
         private string StudentClassId { get; set; }
         public int CourseId { get; set; }

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace SchoolNet_MongoDb_Redis.Entities
 {
     public class Course : IEntity
-    {
+    {        
         public ObjectId _id { get; set; }
-        public virtual string Id { get; set; }
 
+        public Guid Uid { get; set; }
         private string CourseId { get; set; }
         public string Name { get; set; }
         public int WorkLoad { get; set; }
