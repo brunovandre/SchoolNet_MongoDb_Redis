@@ -28,6 +28,12 @@ namespace SchoolNet_MongoDb_Redis
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(Configuration);
+            services.AddDistributedRedisCache(options =>
+            {
+                options.Configuration =
+                    Configuration.GetSection("MongoDB:SchoolNetRedisConnectionString").Value;
+                options.InstanceName = "SchoolNetRedisCache";
+            });
             services.AddTransient<SchoolNetContext>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 using SchoolNet_MongoDb_Redis.Context;
 using SchoolNet_MongoDb_Redis.Entities;
 
@@ -12,18 +14,35 @@ namespace SchoolNet_MongoDb_Redis.Controllers
     public class CourseController : Controller
     {
         private readonly SchoolNetContext _context;
+        private readonly IDistributedCache _cache;
 
-        public CourseController(SchoolNetContext context)
+        public CourseController(
+            SchoolNetContext context,
+            IDistributedCache cache
+            )
         {
             _context = context;
+            _cache = cache;
         }
 
         [HttpGet()]
+        [ProducesResponseType(200)]
         public async Task<IActionResult> GetAllAsync()
         {
-            var courses = await _context.GetAllAsync<Course>("Courses");
+            var result = await _cache.GetStringAsync("Courses");
+            if(result == null)
+            {
+                var courses = await _context.GetAllAsync<Course>("Courses");
+                var cacheOptions = new DistributedCacheEntryOptions();
+                cacheOptions.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
 
-            return Ok(courses);
+                var jsonCourses = JsonConvert.SerializeObject(courses);
+                await _cache.SetStringAsync("Courses", jsonCourses, cacheOptions);
+                result = jsonCourses;
+            }
+            
+
+            return Content(result, "application/json");
         }
 
         [HttpGet("{id}")]
@@ -41,6 +60,7 @@ namespace SchoolNet_MongoDb_Redis.Controllers
             course.Uid = Guid.NewGuid();
             var response = await _context.InsertAsync(course, "Courses");
 
+            await _cache.RemoveAsync("Courses");
             return Created(string.Empty, response);
         }
 
@@ -52,6 +72,7 @@ namespace SchoolNet_MongoDb_Redis.Controllers
             
             await _context.UpdateAsync(id, course, "Courses");
 
+            await _cache.RemoveAsync("Courses");
             return Ok(course);
         }
 
@@ -62,6 +83,7 @@ namespace SchoolNet_MongoDb_Redis.Controllers
             if (result == 0)
                 return NotFound();
 
+            await _cache.RemoveAsync("Courses");
             return Ok();
         }
     }
